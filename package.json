@@ -8,6 +8,10 @@
   "engines": {
     "vscode": "^1.105.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ronisbr/julia-docstrings"
+  },
   "categories": [
     "Other"
   ],

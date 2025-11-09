@@ -1,5 +1,9 @@
 # Julia DocStrings for VS Code
 
+<p align="center">
+  <img src="./images/icon.png" width="128" title="julia-docstrings"><br>
+</p>
+
 This package contains a simple extension to provide a skeleton of docstring for some objects
 in Julia language.
 

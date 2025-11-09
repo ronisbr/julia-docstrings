@@ -1,4 +1,4 @@
-# Julia DocStrings for VSCode
+# Julia DocStrings for VS Code
 
 This package contains a simple extension to provide a skeleton of docstring for some objects
 in Julia language.
@@ -46,4 +46,4 @@ The following docstring will be added:
 """
 ```
 
-where all the text between `<>` represent the VSCode snippet placeholders.
+where all the text between `<>` represent the VS Code snippet placeholders.

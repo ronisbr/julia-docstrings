@@ -1,5 +1,10 @@
 # Change Log
 
+## v0.1.4
+
+- ![Bugfix][badge-bugfix] Increase the wait time for the VSCodeVim change the mode before
+adding the snippet.
+
 ## v0.1.0
 
 - Initial release

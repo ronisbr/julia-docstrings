@@ -3,7 +3,7 @@
   "displayName": "Julia DocStrings",
   "description": "Create docstrings for objects in Julia language.",
   "icon": "images/icon.png",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "ronisbr",
   "engines": {
     "vscode": "^1.105.0"

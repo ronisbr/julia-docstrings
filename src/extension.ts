@@ -255,7 +255,7 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         // We need to wait for the mode change to take effect.
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       // Capture all the lines.

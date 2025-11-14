@@ -75,6 +75,8 @@ function createArgsInfo(funcDecl: string): string[] {
 
     kwargList.forEach((kwarg) => {
       if (firstKwarg) {
+        if (args) output.push("");
+
         output.push("# Keywords\n");
         firstKwarg = false;
       }

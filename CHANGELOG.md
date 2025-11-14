@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.1.5
+
+- ![Bugfix][badge-bugfix] Add new line between arguments and keywords.
+
 ## v0.1.4
 
 - ![Bugfix][badge-bugfix] Increase the wait time for the VSCodeVim change the mode before

@@ -1,5 +1,10 @@
 # Change Log
 
+## v0.1.6
+
+- ![Enhancement][badge-enhancement] Change the command name from
+  `extension.insertJuliaDocumentation` to `julia-docstrings.insertJuliaDocumentation`.
+
 ## v0.1.5
 
 - ![Bugfix][badge-bugfix] Add new line between arguments and keywords.

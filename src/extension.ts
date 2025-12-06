@@ -220,7 +220,7 @@ function isVSCodeVimActive(): boolean {
 
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
-    "extension.insertJuliaDocumentation",
+    "julia-docstrings.insertJuliaDocumentation",
     async () => {
       const editor = vscode.window.activeTextEditor;
 

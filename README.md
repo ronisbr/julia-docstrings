@@ -45,6 +45,7 @@ The following docstring will be added:
 - `y::Int`: <Argument description>
 - `z::Int`: <Argument description>
     (**Default**: `3`)
+
 # Keywords
 
 - `verbose::Bool`: <Keyword description>

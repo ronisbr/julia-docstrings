@@ -1,5 +1,19 @@
 # Change Log
 
+## v0.2.0
+
+- ![Enhancement][badge-enhancement] Improved code maintainability by extracting magic
+  strings to constants.
+- ![Enhancement][badge-enhancement] Reduced code duplication by introducing a shared
+  `parseParameters` function.
+- ![Enhancement][badge-enhancement] Improved error messages with better user feedback.
+- ![Enhancement][badge-enhancement] Added error handling for snippet insertion failures.
+- ![Enhancement][badge-enhancement] Added explicit return type annotations to all functions.
+- ![Enhancement][badge-enhancement] Added basic unit tests for extension activation and
+  command registration.
+- ![Enhancement][badge-enhancement] Converted indentation to 4 spaces for better
+  readability.
+
 ## v0.1.6
 
 - ![Enhancement][badge-enhancement] Change the command name from

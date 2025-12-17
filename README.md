@@ -7,6 +7,8 @@
 This package contains a simple extension to provide a skeleton of docstring for some objects
 in Julia language.
 
+![Julia DocStrings Showcase](./images/showcase.gif)
+
 ## Features
 
 We currently support the following objects:

@@ -1,13 +1,21 @@
 import * as vscode from "vscode";
 
 /******************************************************************************************
- *                                   Auxiliary Functions                                  *
+ *                                       Constants                                        *
  ******************************************************************************************/
+
+const TYPE_ANCHOR        = "!__TYPE_ANCHOR__!";
+const PLACEHOLDER_PREFIX = "!__PLACEHOLDER(";
+const PLACEHOLDER_SUFFIX = ")__!";
+
+/******************************************************************************************
+ *                                   Auxiliary Functions                                  *
+******************************************************************************************/
 
 /**
  * Create the list of arguments for the Julia function documentation given the function
  * declaration in `fundDecl`.
- * 
+ *
  * @param funcDecl Function declarations in one line.
  * @returns A string with the argument declaration.
  */
@@ -20,92 +28,72 @@ function createArgsInfo(funcDecl: string): string[] {
   let parameters = paramsMatch[1];
   if (parameters.length === 0) return output;
 
-  let [args, kwargs] = parameters.split(';');
-  kwargs = kwargs || "";
+  const [args, kwargs] = parameters.split(';');
 
-  // == Parse Arguments ====================================================================
-
+  // Parse Arguments
   if (args) {
-    // First, we need to place the anchors for the composed types to remove the
-    // constructions like `Union{Nothing, Float64}`. This procedure is required because we
-    // filter for `, ` to split the arguments afterwards.
-
-    let [modFuncDecl, typeAnchors] = placeComposedTypeAnchors(args);
-    const argList = modFuncDecl.split(',').map(s => s.trim()).filter(s => s.length > 0);
-
-    let firstArg: boolean = true;
-
-    argList.forEach((arg) => {
-      if (firstArg) {
-        output.push("# Arguments\n");
-        firstArg = false;
-      }
-
-      // Get the argument name.
-      let argName = arg.replace(/\s*=[^=]*$/, "");
-
-      // Check if we have a composed type here. If so, replace the anchor with the type
-      // value.
-      if (argName.includes("!__TYPE_ANCHOR__!") && typeAnchors.length > 0) {
-        argName = argName.replace("!__TYPE_ANCHOR__!", typeAnchors.shift()!);
-      }
-
-      output.push(`- \`${argName}\`: !__PLACEHOLDER(Argument description)__!`);
-
-      // If we have default value, add the information to the output.
-      const defaultMatch = arg.match(/\s*=\s*(.*)$/);
-
-      if (defaultMatch) {
-        output.push(`    (**Default**: \`${defaultMatch[1]}\`)`);
-      }
-    });
+    parseParameters(args, output, "# Arguments\n", "Argument");
   }
 
-  // == Parse Keywords =====================================================================
-
-  if (kwargs.trim().length > 0) {
-    // First, we need to place the anchors for the composed types to remove the
-    // constructions like `Union{Nothing, Float64}`. This procedure is required because we
-    // filter for `, ` to split the arguments afterwards.
-
-    let [modKwargs, typeAnchors] = placeComposedTypeAnchors(kwargs);
-    const kwargList = modKwargs.split(',').map(s => s.trim()).filter(s => s.length > 0);
-
-    let firstKwarg: boolean = true;
-
-    kwargList.forEach((kwarg) => {
-      if (firstKwarg) {
-        if (args) output.push("");
-
-        output.push("# Keywords\n");
-        firstKwarg = false;
-      }
-
-      // Get keyword name.
-      let kwargName = kwarg.replace(/\s*=[^=]*$/, '');
-
-      // Check if we have a composed type here. If so, replace the anchor with the type
-      // value.
-      if (kwargName.includes("!__TYPE_ANCHOR__!") && typeAnchors.length > 0) {
-        kwargName = kwargName.replace("!__TYPE_ANCHOR__!", typeAnchors.shift()!);
-      }
-
-      output.push(`- \`${kwargName}\`: !__PLACEHOLDER(Keyword description)__!`);
-
-      // If we have default value, add the information to the output.
-      const defaultMatch = kwarg.match(/\s*=\s*(.*)$/);
-
-      if (defaultMatch) {
-        output.push(`    (**Default**: \`${defaultMatch[1]}\`)`);
-      }
-    });
+  // Parse Keywords
+  if (kwargs && kwargs.trim().length > 0) {
+    if (args) {
+      output.push("");
+    }
+    parseParameters(kwargs, output, "# Keywords\n", "Keyword");
   }
 
   return output;
 }
 
 /**
- * 
+ * Parse parameters (arguments or keywords) and add them to the output.
+ *
+ * @param params Parameter string to parse.
+ * @param output Output array to append to.
+ * @param header Section header (e.g., "# Arguments\n").
+ * @param descType Type of description (e.g., "Argument" or "Keyword").
+ */
+function parseParameters(
+  params: string,
+  output: string[],
+  header: string,
+  descType: string
+): void {
+  const [modParams, typeAnchors] = placeComposedTypeAnchors(params);
+  const paramList = modParams.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+  let isFirst = true;
+
+  paramList.forEach((param) => {
+    if (isFirst) {
+      output.push(header);
+      isFirst = false;
+    }
+
+    // Get the parameter name (remove default value if present).
+    let paramName = param.replace(/\s*=[^=]*$/, "");
+
+    // Check if we have a composed type here. If so, replace the anchor with the type value.
+    if (paramName.includes(TYPE_ANCHOR) && typeAnchors.length > 0) {
+      paramName = paramName.replace(TYPE_ANCHOR, typeAnchors.shift()!);
+    }
+
+    output.push(
+      `- \`${paramName}\`: ${PLACEHOLDER_PREFIX}${descType} description${PLACEHOLDER_SUFFIX}`
+    );
+
+    // If we have default value, add the information to the output.
+    const defaultMatch = param.match(/\s*=\s*(.*)$/);
+    if (defaultMatch) {
+      output.push(`    (**Default**: \`${defaultMatch[1]}\`)`);
+    }
+  });
+}
+
+/**
+ * Create Julia function docstring lines based on the provided function declaration lines.
+ *
  * @param lines Lines with the Julia function declaration.
  * @returns Lines with the Julia function docstring.
  */
@@ -114,9 +102,9 @@ function createJuliaFuncDoc(lines: string[]): string[] {
   const output: string[] = [];
 
   output.push('"""');
-  output.push(`    ${suppressKwargs(funcDecl)} -> !__PLACEHOLDER(Return type)__!`);
+  output.push(`    ${suppressKwargs(funcDecl)} -> ${PLACEHOLDER_PREFIX}Return type${PLACEHOLDER_SUFFIX}`);
   output.push("");
-  output.push("!__PLACEHOLDER(Description of the function)__!");
+  output.push(`${PLACEHOLDER_PREFIX}Description of the function${PLACEHOLDER_SUFFIX}`);
 
   const argsInfo = createArgsInfo(funcDecl);
 
@@ -137,14 +125,14 @@ function createJuliaFuncDoc(lines: string[]): string[] {
 function joinFunctionDeclaration(lines: string[]): string {
   // Output text that contains the function declaration in a single line.
   let funcDecl = "";
-  
+
   // First, concatenate all lines into a single line, removing extra spaces.
   lines.forEach(line => {
       // Strip all multiple spaces and trim leading/trailing spaces.
       let v = line.replace(/\s+/g, ' ').trim();
 
       if (v.length === 0) return;
-      
+
       // Check if we need to add a space before appending the next part.
       if (funcDecl.length > 0) {
         const lastChar  = funcDecl.slice(-1);
@@ -170,7 +158,7 @@ function joinFunctionDeclaration(lines: string[]): string {
 
 /**
  * Place anchors for composed types in the function declaration.
- * 
+ *
  * This function replaces the text inside composed types like `Union{Nothing, Float64}` with
  * the anchor `!__TYPE_ANCHOR__!`. The replaced text is added to a table with is returned
  * together with the modified string. We used this function to pre-process the function
@@ -190,7 +178,7 @@ function placeComposedTypeAnchors(funcDecl: string): [string, string[]] {
     values.push(match[1]);
   }
 
-  const modified = funcDecl.replace(/\{([^}]*)\}/g, "{!__TYPE_ANCHOR__!}");
+  const modified = funcDecl.replace(/\{([^}]*)\}/g, `{${TYPE_ANCHOR}}`);
 
   return [modified, values];
 }
@@ -211,21 +199,32 @@ function suppressKwargs(funcDecl: string): string {
  ******************************************************************************************/
 
 /**
- * Check if VSCodeVim is installed and active.
+ * Check if VSCodeVim extension is installed and active.
+ * @returns True if VSCodeVim is active, false otherwise.
  */
 function isVSCodeVimActive(): boolean {
   const extension = vscode.extensions.getExtension("vscodevim.vim");
   return extension !== undefined && extension.isActive;
 }
 
+/**
+ * Activates the Julia DocStrings extension.
+ * @param context The extension context provided by VS Code.
+ */
 export function activate(context: vscode.ExtensionContext) {
-  let disposable = vscode.commands.registerCommand(
+  const disposable = vscode.commands.registerCommand(
     "julia-docstrings.insertJuliaDocumentation",
     async () => {
       const editor = vscode.window.activeTextEditor;
 
       if (!editor) {
-        vscode.window.showInformationMessage("No active editor found.");
+        vscode.window.showWarningMessage("No active editor found.");
+        return;
+      }
+
+      // Check if the document is a Julia file
+      if (editor.document.languageId !== "julia") {
+        vscode.window.showWarningMessage("This command only works with Julia files.");
         return;
       }
 
@@ -266,13 +265,21 @@ export function activate(context: vscode.ExtensionContext) {
         lines.push(editor.document.lineAt(i).text);
       }
 
+      // Validate that we have some content to work with
+      const hasContent = lines.some(line => line.trim().length > 0);
+      if (!hasContent) {
+        vscode.window.showWarningMessage("No function declaration found in the selection.");
+        return;
+      }
+
       // Create the documentation.
       const docLines = createJuliaFuncDoc(lines);
 
-      // Convert `!__PLACEHOLDER(Description)__!` to numbered tabstops.
+      // Convert placeholders to numbered tabstops.
       let counter = 1;
+      const placeholderRegex = new RegExp(`${PLACEHOLDER_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(.*?)${PLACEHOLDER_SUFFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
       const withTabstops = docLines.map(line =>
-        line.replace(/!__PLACEHOLDER\((.*?)\)__!/g, (_, desc) => `\${${counter++}:${desc}}`)
+        line.replace(placeholderRegex, (_, desc) => `\${${counter++}:${desc}}`)
       );
 
       // Ensure a final cursor position

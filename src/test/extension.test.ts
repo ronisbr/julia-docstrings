@@ -1,19 +1,19 @@
-import * as assert from 'assert';
-import * as vscode from 'vscode';
+import * as assert from "assert";
+import * as vscode from "vscode";
 
-suite('Julia DocStrings Extension Test Suite', () => {
-	vscode.window.showInformationMessage('Running Julia DocStrings tests.');
+suite("Julia DocStrings Extension Test Suite", () => {
+    vscode.window.showInformationMessage("Running Julia DocStrings tests.");
 
-	test('Extension Loading', async () => {
-		const extension = vscode.extensions.getExtension('ronisbr.julia-docstrings');
-		await extension!.activate();
-		const commands = await vscode.commands.getCommands();
+    test("Extension Loading", async () => {
+        const extension = vscode.extensions.getExtension("ronisbr.julia-docstrings");
+        await extension!.activate();
+        const commands = await vscode.commands.getCommands();
 
-		assert.strictEqual(extension!.isActive, true);
-		assert.ok(commands.includes('julia-docstrings.insertJuliaDocumentation'));
-	});
+        assert.strictEqual(extension!.isActive, true);
+        assert.ok(commands.includes("julia-docstrings.insertJuliaDocumentation"));
+    });
 
-	test("Document Julia Function", async () => {
+    test("Document Julia Function", async () => {
         const doc = await vscode.workspace.openTextDocument({
             content: "function test(a::Number, b::Union{Nothing, Float64}, c::Any; kw1::Char = 'c', kw2::Int = 1)",
             language: "julia"
@@ -28,7 +28,7 @@ suite('Julia DocStrings Extension Test Suite', () => {
 
         const text = doc.getText();
 
-		const expected = `
+        const expected = `
 """
     test(a::Number, b::Union{Nothing, Float64}, c::Any; kwargs...) -> Return type
 
@@ -48,10 +48,10 @@ Description of the function
     (**Default**: \`1\`)
 """`;
 
-		assert.strictEqual(text.startsWith(expected.trim()), true);
+        assert.strictEqual(text.startsWith(expected.trim()), true);
     });
 
-	test("Document Julia Macro", async () => {
+    test("Document Julia Macro", async () => {
         const doc = await vscode.workspace.openTextDocument({
             content: "macro test(a, b)",
             language: "julia"
@@ -66,7 +66,7 @@ Description of the function
 
         const text = doc.getText();
 
-		const expected = `
+        const expected = `
 """
     @test(a, b) -> Return type
 
@@ -78,6 +78,6 @@ Description of the function
 - \`b\`: Argument description
 """`;
 
-		assert.strictEqual(text.startsWith(expected.trim()), true);
+        assert.strictEqual(text.startsWith(expected.trim()), true);
     });
 });
